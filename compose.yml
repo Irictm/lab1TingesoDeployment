@@ -1,0 +1,124 @@
+version: "3.8"
+
+services:
+  # Frontend services
+  frontend1:
+    image: irictm/lab1-tingeso-frontend:latest
+    networks:
+      - frontend-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  frontend2:
+    image: irictm/lab1-tingeso-frontend:latest
+    networks:
+      - frontend-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  frontend3:
+    image: irictm/lab1-tingeso-frontend:latest
+    networks:
+      - frontend-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  # Backend services
+  backend1:
+    image: irictm/lab1-tingeso-backend:latest
+    environment:
+      - DB_HOST=postgres_bd
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - IVA = 0.19
+    networks:
+      - backend-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - postgres_bd
+
+  backend2:
+    image: irictm/lab1-tingeso-backend:latest
+    environment:
+      - DB_HOST=postgres_bd
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - IVA = 0.19
+    networks:
+      - backend-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - postgres_bd
+
+  backend3:
+    image: irictm/lab1-tingeso-backend:latest
+    environment:
+      - DB_HOST=postgres_bd
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - IVA = 0.19
+    networks:
+      - backend-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - postgres_bd
+
+  # Nginx for frontend load balancing
+  nginx-frontend:
+    image: nginx:latest
+    ports:
+      - "8070:8070"
+    volumes:
+      - ./nginx-frontend.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend1
+      - frontend2
+      - frontend3
+    networks:
+      - frontend-network
+    restart: always
+
+  # Nginx for backend load balancing
+  nginx-backend:
+    image: nginx:latest
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./nginx-backend.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+    networks:
+      - backend-network
+    restart: always
+      
+  # Postgresql data base
+  postgres_bd:
+    image: postgres
+    environment: 
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=dblab1tingeso
+    ports:
+      - "5435:5432"
+    volumes:
+      - lab1-tingeso-postgres-volume:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+volumes:
+  lab1-tingeso-postgres-volume:
+networks:
+  frontend-network:
+  backend-network:
